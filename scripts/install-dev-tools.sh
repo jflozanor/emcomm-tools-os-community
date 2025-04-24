@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 29 December 2023
-# Updated : 20 October 2024
+# Updated : 24 April 2025
 # Purpose : Install development tools
 set -e
 
@@ -37,3 +37,10 @@ then
   sudo apt update
   sudo apt install --no-install-recommends cubic -y
 fi
+
+
+# libyaml-dev - needed for Ruby via rbenv
+et-log "Installing tools needed for ETC R5"
+apt install \
+  libyaml-dev \
+  -y
