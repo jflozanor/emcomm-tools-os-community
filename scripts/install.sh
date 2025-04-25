@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 16 March 2024
-# Updated : 18 March 2025
+# Updated : 24 April 2025
 # Purpose : Main installer for EmComm Tools OS Community
 
 . ./env.sh
@@ -60,3 +60,6 @@ exitIfNotRoot
 [ ! -z "${ET_EXPERT}" ] && ./download-wikipedia.sh
 
 ./install-wine.sh
+
+# Install GIS applications
+./install-mbtileserver.sh
