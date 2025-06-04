@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 16 March 2024
-# Updated : 26 April 2025
+# Updated : 4 June 2025
 # Purpose : Main installer for EmComm Tools Community (ETC)
 
 . ./env.sh
@@ -66,3 +66,10 @@ exitIfNotRoot
 ./install-python.sh
 ./install-mbutil.sh
 ./install-gis-tools.sh
+
+# Install RF analysis and prediction tools
+./install-rf-analysis-tools.sh
+
+# Install SDR tools
+./install-sdr-tools.sh
+./install-dump1090.sh
