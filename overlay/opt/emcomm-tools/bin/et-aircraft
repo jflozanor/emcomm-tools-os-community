@@ -12,9 +12,7 @@
 # 1. dump1099 is launched
 # 2. A map is launched
 
-# TODO: Update installer to copy map file
 # TODO: Check for RTL-SDR device
-# TODO: Change port from 8080 to 1090
 # TODO: Add a systemd user service to start dump1090
 # TODO: Use local offline map
 # TODO: Move map to current position
