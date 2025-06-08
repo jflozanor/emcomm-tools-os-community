@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 4 June 2025
-# Update  : 7 June 2025
+# Update  : 8 June 2025
 # Purpose : Wrapper script around ADS-B integration
 #
 # Preconditions:
@@ -12,8 +12,8 @@
 # 1. dump1099 systemd service is launched
 # 2. Web browser is launched with dump1090 map
 
-# TODO: Use icon and add to launcher
 # TODO: Increse size of aircraft
+# TODO: Additional info
 # TODO: Research why RTL-SDR v4 does not work
 # TODO: Test RTL-SDR v3 
 # TODO: Use ETC offline map engine
