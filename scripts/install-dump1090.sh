@@ -54,3 +54,7 @@ ln -s ${INSTALL_DIR} ${LINK_PATH}
 stow -v -d /opt ${APP} -t /usr/local
 
 cd $CWD_DIR
+
+et-log "Updating launcher icon to support PNP..."
+cp -v ../overlay/usr/share/applications/et-aircraft.desktop /usr/share/applications/
+
