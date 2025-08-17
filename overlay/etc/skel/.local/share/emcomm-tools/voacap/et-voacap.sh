@@ -4,21 +4,112 @@
 # Date    : 23 May 2023
 # Updated : 16 August 2025
 # Purpose : Offline HF prediction using voacapl
+source /opt/emcomm-tools/bin/et-common
 
-if [[ $# -ne 4 ]]; then
-  echo "Usage $(basename $0) <callsign1> <callsign2> <power> <mode>"
-  echo "  <callsign1>   Callsign of transmitting station"
-  echo "  <callsign2>   Callsign of receiving station"
-  echo "  <power>       Output power [5|100|500|1500]"
-  echo "  <mode>        Mode         [AM|CW|FT8|SSB]"
-  exit 1
-fi
+lookup_station() {
+  local type="$1"   # call | grid | latlon
+  local value="$2"  # callsign | grid | "lat,lon"
+  local json_file="$3"
+
+  case "$type" in
+    call)
+      curl -f -s "http://localhost:1981/api/license?callsign=${value}" > "$json_file"
+      if [[ $? -ne 0 ]]; then
+        echo "Location not found for callsign: ${value}. Exiting."
+        exit 1
+      fi
+      ;;
+    grid)
+      echo "Grid not support not yet implemented"
+      exit 1
+
+      #curl -f -s "http://localhost:1981/api/geo/grid=${value}" > "$json_file"
+      #if [[ $? -ne 0 ]]; then
+      #  echo "Location not found for grid: ${value}. Exiting."
+      #  exit 1
+      #fi
+      ;;
+    latlon)
+      # Write directly to JSON for consistency
+      local lat lon
+      IFS=',' read -r lat lon <<< "$value"
+      if [[ -z $lat || -z $lon ]]; then
+        echo "Invalid lat,lon format: $value. Expected 'lat,lon'. Exiting."
+        exit 1
+      fi
+      jq -n --arg lat "$lat" --arg lon "$lon" '{lat: ($lat|tonumber), lon: ($lon|tonumber)}' > "$json_file"
+      ;;
+    *)
+      echo "Invalid station type: $type"
+      exit 1
+      ;;
+  esac
+
+  # Extract lat/lon regardless of type
+  local lat lon
+  lat=$(jq .lat "$json_file")
+  lon=$(jq .lon "$json_file")
+
+  echo "$lat $lon"
+}
 
 ET_SSN="${HOME}/.local/share/emcomm-tools/voacap/ssn.txt"
 if [[ ! -e ${ET_SSN} ]]; then
-  "Sunspot numbers not available: ${ET_SSN}. Exiting"
+  echo -e "${RED}Sunspot number file  not available:${WHITE}${ET_SSN}${NC}"
+  echo -e "${YELLOW}Try running the following to fetch the sunspot numbers (requires Internet):${NC}"
+  echo -e "${WHITE}cd ${HOME}/.local/share/emcomm-tools/voacap${NC}"
+  echo -e "${WHITE}./fetch-ssn.sh${NC}"
   exit 1
 fi
+
+usage() {
+  echo "Usage: $(basename $0) [OPTIONS]"
+  echo
+  echo "Station options (choose one per TX and RX):"
+  echo "  --tx-call CALLSIGN        Transmitting station callsign"
+  echo "  --tx-grid GRID            Transmitting station Maidenhead grid"
+  echo "  --tx-latlon LAT,LON       Transmitting station coordinates in decimal degrees"
+  echo "  --rx-call CALLSIGN        Receiving station callsign"
+  echo "  --rx-grid GRID            Receiving station Maidenhead grid"
+  echo "  --rx-latlon LAT,LON       Receiving station coordinates in decimal degrees"
+  echo
+  echo "Other options:"
+  echo "  -p POWER                  Output power [5|100|500|1500]"
+  echo "  -m MODE                   Mode [AM|CW|JS8|SSB]"
+  echo
+
+  exit 1
+}
+
+tx_type="" 
+tx_value=""
+rx_type="" 
+rx_value=""
+power="" 
+mode=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --tx-call)   tx_type="call";   tx_value="$2"; shift 2 ;;
+    --tx-grid)   tx_type="grid";   tx_value="$2"; shift 2 ;;
+    --tx-latlon) tx_type="latlon"; tx_value="$2"; shift 2 ;;
+    --rx-call)   rx_type="call";   rx_value="$2"; shift 2 ;;
+    --rx-grid)   rx_type="grid";   rx_value="$2"; shift 2 ;;
+    --rx-latlon) rx_type="latlon"; rx_value="$2"; shift 2 ;;
+    -p)          power="$2"; shift 2 ;;
+    -m)          mode="$2";  shift 2 ;;
+    -*|--*)      echo "Unknown option: $1"; usage ;;
+    *)           echo "Unexpected argument: $1"; usage ;;
+  esac
+done
+
+# Validate required args
+[[ -z $tx_type || -z $rx_type || -z $power || -z $mode ]] && usage
+
+#echo "TX ($tx_type): $tx_value"
+#echo "RX ($rx_type): $rx_value"
+#echo "Power: $power"
+#echo "Mode: $mode"
 
 ET_VOA_WORKING_DIR=$HOME/itshfbc/run
 ET_VOA_REPORT=${ET_VOA_WORKING_DIR}/voacapl.txt
@@ -36,16 +127,8 @@ MONTH_FMT=$(date +'%-m.00')
 # TX Antenna
 #######################################################################
 
-TX_STATION=$1
-TX_JSON=tx-station.json
-curl -f -s http://localhost:1981/api/license?callsign=$TX_STATION > $TX_JSON
-if [[ $? -ne 0 ]]; then
-  echo "Location not found for callsign: ${TX_STATION}. Exiting."
-  exit 1
-fi
-
-TL=$(cat $TX_JSON | jq .lat)
-TK=$(cat $TX_JSON | jq .lon)
+read TL TK < <(lookup_station "$tx_type" "$tx_value" tx-station.json)
+echo "TX Lat/Lon: $TL,$TK"
 
 TL1=$( awk -v n1=$TL -v n2=90 -v n3=-90 'BEGIN {if (n1<n3 || n1>n2) printf ("%s", "a"); else printf ("%.2f", n1);}' )
 
@@ -62,18 +145,9 @@ TLO=$( awk -v n1=$TK1 -v n2=0 'BEGIN {if (n1<n2) { n1=substr(n1,2); printf ("%7s
 # RX Antenna
 #######################################################################
 
-RX_STATION=$2
-RX_JSON=rx-station.json
-curl -f -s http://localhost:1981/api/license?callsign=$RX_STATION > $RX_JSON
-if [[ $? -ne 0 ]]; then
-  echo "Location not found for callsign: ${RX_STATION}. Exiting."
-  exit 1
-fi
+read RL RK < <(lookup_station "$rx_type" "$rx_value" rx-station.json)
+echo "RX Lat/Lon: $RL,$RK"
 
-RL=$(cat $RX_JSON | jq .lat)
-RK=$(cat $RX_JSON | jq .lon)
-
-echo "RX ($RX_STATION):  $RL,$RK"
 RL1=$( awk -v n1=$RL -v n2=90 -v n3=-90 'BEGIN {if (n1<n3 || n1>n2) printf ("%s", "a"); else printf ("%.2f", n1);}' )
 
 # add North or South
@@ -85,7 +159,7 @@ RK1=$( awk -v n1=$RK -v n2=180 -v n3=-180 'BEGIN {if (n1<n3 || n1>n2) printf ("%
 RLO=$( awk -v n1=$RK1 -v n2=0 'BEGIN {if (n1<n2) { n1=substr(n1,2); printf ("%7sW", n1); } else printf ("%7sE", n1);}' )
 
 # Power settings
-PWR=$3
+PWR=$power
 PW="0.0800"
 echo "TX Power: ${PWR} watts"
 if [ "$PWR" = "5" ]; then
@@ -99,10 +173,10 @@ elif [ "$PWR" = "1500" ]; then
 fi
 
 # Mode
-MODE=$4
+MODE=$mode
 MD="24.0"
 echo "Mode: ${MODE}"
-if [ "$MODE" = "FT8" ]; then
+if [ "$MODE" = "JS8" ]; then
     MD="13.0"
 elif [ "$MODE" = "CW" ]; then
     MD="24.0"
