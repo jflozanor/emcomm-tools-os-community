@@ -1,7 +1,7 @@
 #!/bin/bash
 # Author  : Gaston Gonzalez
 # Date    : 1 February 2025
-# Updated : 7 June 2025
+# Updated : 20 August 2025
 # Purpose : Common environment variables and functions
 
 # Standardized device paths for supported hardware
@@ -74,3 +74,70 @@ start_and_wait_for_service() {
   exit_on_service_failure ${systemd_unit_name}
 }
 
+
+# download_with_retries downloads a file from a URL with retry and checksum support.
+#
+# This function attempts to download a file up to a maximum number of retries.
+# If a checksum is provided, the downloaded file will be verified against it.
+# On checksum mismatch, the file is deleted and the download retried.
+#
+# Args:
+#   url: The URL of the file to download. (required)
+#   filename: The local filename to save the file as. (required)
+#   checksum: Optional sha256 checksum string to validate the downloaded file.
+#   max_retries: Optional max number of retries (default: 3).
+#   wait_seconds: Optional wait time in seconds between retries (default: 2).
+#
+# Returns:
+#   0 if the file was successfully downloaded (and checksum verified if given).
+#   1 if arguments are missing, download fails after all retries,
+#     or checksum verification fails.
+#
+# Example:
+#   download_with_retries "https://example.com/file.tar.gz" "file.tar.gz"
+#   download_with_retries "https://example.com/file.tar.gz" "file.tar.gz" "abc123..." 5 3
+download_with_retries() {
+  local url="$1"
+  local filename="$2"
+  local checksum="$3"          # expected checksum (sha256)
+  local max_retries="${4:-3}"  # default = 3 retries
+  local wait_seconds="${5:-2}" # default = 2s wait between retries
+
+  # Require at least URL and filename
+  if [[ -z "$url" || -z "$filename" ]]; then
+    echo "Usage: download_with_retries <url> <filename> [checksum] [max_retries] [wait_seconds]"
+    return 1
+  fi
+
+  for ((i=1; i<=max_retries; i++)); do
+    echo "Attempt $i of $max_retries to download $url..."
+
+    if curl -L -f -o "$filename" "$url"; then
+      echo "Download successful: $filename"
+
+      if [[ -n "$checksum" ]]; then
+        echo "Verifying checksum..."
+        local file_checksum
+        file_checksum=$(sha256sum "$filename" | awk '{print $1}')
+
+        if [[ "$file_checksum" == "$checksum" ]]; then
+          echo "Checksum OK"
+          return 0
+        else
+          echo "Checksum mismatch (expected $checksum, got $file_checksum)"
+          rm -f "$filename"
+        fi
+      else
+        # no checksum provided, just succeed
+        return 0
+      fi
+    else
+      echo "Download failed (attempt $i)."
+    fi
+
+    sleep "$wait_seconds"
+  done
+
+  echo "Download failed after $max_retries attempts."
+  return 1
+}

@@ -1,12 +1,14 @@
 #!/bin/bash
 # Author  : Gaston Gonzalez
 # Date    : 13 August 2025
+# Updated : 20 August 2025
 # Purpose : Install EmComm Tools API
 set -e
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
 trap 'et-log "\"${last_command}\" command failed with exit code $?."' ERR
 
 . ./env.sh
+. ../overlay/opt/emcomm-tools/bin/et-common
 
 APP=et-api
 VERSION=1.0.0
@@ -24,17 +26,23 @@ mkdir -v -p "${BIN_DIR}" "${DATA_DIR}" "${INDEX_DIR}"
 
 # Download and install et-api uber JAR
 URL="${BASE_URL}/${ET_API_JAR}"
-et-log "Downloading ${APP}: ${URL}"
-curl -s -L -o "${BIN_DIR}/${APP}" --fail ${URL}
+download_with_retries ${URL} ${APP}
+mv ${APP} ${BIN_DIR}
 chmod 755 "${BIN_DIR}/${APP}"
 
 # Download pre-built data sets
-FILES=("faa.csv" "license.csv" "zip2geo.csv" "zip2geo-elevation.csv")
+FILES=(
+  "faa.csv"
+  "license.csv"
+  "zip2geo.csv"
+  "zip2geo-elevation.csv"
+)
 for file in "${FILES[@]}"; do
   URL="${BASE_URL}/${file}"
 
   et-log "Downloading data set: ${URL}"
-  curl -s -L -o "${DATA_DIR}/${file}" --fail ${URL}
+  download_with_retries ${URL} ${file}
+  mv ${file} ${DATA_DIR}
 done
 
 et-log "Applying permissions..."
