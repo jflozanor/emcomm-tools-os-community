@@ -4,7 +4,7 @@
 # Date    : 23 May 2023
 # Updated : 24 August 2025
 # Purpose : Offline HF prediction using voacapl
-#set -e
+set -e
 set -o pipefail
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
 trap 'echo -e "${RED}\"${last_command}\" command failed with exit code $?.${NC}"' ERR
@@ -77,6 +77,32 @@ validate_latitude() {
   # Check range: -90 <= lat <= 90
   if (( $(echo "$latf < -90" | bc -l) )) || (( $(echo "$latf > 90" | bc -l) )); then
     echo -e "${RED}Latitude must be in range between -90 and 90 degrees${NC}" >&2
+    return 1
+  fi
+}
+
+validate_longitude() {
+  local lon="$1"
+
+  if [[ -z "$lon" ]]; then
+    echo -e "${RED}Longitude can't be an empty value${NC}" >&2
+    return 1
+  fi
+
+  if ! [[ "$lon" =~ ^-?[0-9]+([.][0-9]+)?$ ]]; then
+    echo -e "${RED}Longitude must be a number${NC}" >&2
+    return 1
+  fi
+
+  local lonf
+  lonf=$(printf "%.10f" "$lon" 2>/dev/null) || {
+    echo -e "${RED}Error converting longitude ${NC}" >&2
+    return 1
+  }
+
+  # Check range: -180 <= lat <= 1800
+  if (( $(echo "$lon < -180" | bc -l) )) || (( $(echo "$lon > 180" | bc -l) )); then
+    echo -e "${RED}Longitude must be in range between -180 and 180 degrees${NC}" >&2
     return 1
   fi
 }
@@ -189,6 +215,7 @@ fi
 read TL TK <<< "$result"
 
 validate_latitude "$TL" || exit 1
+validate_longitude "$TK" || exit 1
 
 TL1=$( awk -v n1=$TL -v n2=90 -v n3=-90 'BEGIN {if (n1<n3 || n1>n2) printf ("%s", "a"); else printf ("%.2f", n1);}' )
 
@@ -216,6 +243,7 @@ fi
 read RL RK <<< "$result"
 
 validate_latitude "$RL" || exit 1
+validate_longitude "$RK" || exit 1
 
 RL1=$( awk -v n1=$RL -v n2=90 -v n3=-90 'BEGIN {if (n1<n3 || n1>n2) printf ("%s", "a"); else printf ("%.2f", n1);}' )
 
