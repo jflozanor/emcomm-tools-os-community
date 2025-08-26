@@ -2,8 +2,8 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 16 March 2024
-# Updated : 18 March 2025
-# Purpose : Main installer for EmComm Tools OS Community
+# Updated : 16 August 2025
+# Purpose : Main installer for EmComm Tools Community (ETC)
 
 . ./env.sh
 . ./functions.sh
@@ -60,3 +60,30 @@ exitIfNotRoot
 [ ! -z "${ET_EXPERT}" ] && ./download-wikipedia.sh
 
 ./install-wine.sh
+
+# Install GIS applications and dependencies
+./install-mbtileserver.sh
+./install-python.sh
+./install-mbutil.sh
+./install-gis-tools.sh
+
+# Install RF analysis and prediction tools
+./install-rf-analysis-tools.sh
+
+# Install SDR tools
+./install-sdr-tools.sh
+./install-dump1090.sh
+
+# Install ETC custom maps
+./download-et-maps.sh
+
+# Install ETC applications
+./install-et-api.sh
+./install-et-aircraft.sh
+
+# Install documentation tools
+./install-dictionary.sh
+#./install-doc-tools.sh
+
+# Install prediction tools
+./install-voacap.sh

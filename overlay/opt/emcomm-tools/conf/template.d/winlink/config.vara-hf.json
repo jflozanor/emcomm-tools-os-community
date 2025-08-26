@@ -73,8 +73,8 @@
     "ptt_ctrl": true
   },
   "gpsd": {
-    "enable_http": false,
-    "allow_forms": false,
+    "enable_http": true,
+    "allow_forms": true,
     "use_server_time": false,
     "addr": "localhost:2947"
   },
