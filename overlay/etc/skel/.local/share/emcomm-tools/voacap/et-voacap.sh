@@ -144,7 +144,7 @@ usage() {
   echo 
   echo "Other options (required):"
   echo "  -p POWER                  Output power [5|20|100|500|1500]"
-  echo "  -m MODE                   Mode [AM|CW|JS8|SSB]"
+  echo "  -m MODE                   Mode [am|cw|js8|ssb]"
   echo
 
   exit 1
@@ -188,8 +188,18 @@ fi
 # Allow for case-insensitve match of the user-defined operating mode
 MODE=$mode
 case "${MODE,,}" in
+  js8-slow)
+    MD="10.0"
+    ;;
   js8)
-    MD="13.0"
+    # normal speed
+    MD="14.0"
+    ;;
+  js8-fast)
+    MD="19.0"
+    ;;
+  js8-turbo)
+    MD="24.0"
     ;;
   cw)
     MD="24.0"
