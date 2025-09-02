@@ -33,6 +33,7 @@ if [[ ! -e ${REPO_SRC_DIR} ]]; then
 fi
 
 cd ${REPO_SRC_DIR}
+autoreconf -f -i
 ./configure --prefix=${INSTALL_DIR}
 make && make install
 
