@@ -2,12 +2,15 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 9 October 2024
-# Updated : 31 May 2025
+# Updated : 26 September 2025
 # Purpose : Wrapper startup/shutdown script around systemd/rigctld
 
 ET_HOME=/opt/emcomm-tools
 ACTIVE_RADIO="${ET_HOME}/conf/radios.d/active-radio.json"
 CAT_DEVICE=/dev/et-cat
+
+# Additional configuration to pass to rigctld
+SET_CONF=""
 
 do_full_auto() {
   et-log "Found ET_DEVICE='${ET_DEVICE}'"
@@ -95,8 +98,14 @@ start() {
     exit 0
   fi
 
+  # Handle optional configuration settings
+  CONF=$(jq -e -r '.rigctrl.conf' "${ET_HOME}/conf/radios.d/active-radio.json")
+  if [[ $? -eq 0 ]]; then
+    SET_CONF="--set-conf=${CONF}"
+  fi
+
   # Generate command
-  CMD="rigctld -m ${ID} -r ${CAT_DEVICE} -s ${BAUD} -P ${PTT} "
+  CMD="rigctld -m ${ID} -r ${CAT_DEVICE} -s ${BAUD} -P ${PTT} ${SET_CONF}"
   et-log "Starting rigctld with: ${CMD}"
   $CMD
 }
