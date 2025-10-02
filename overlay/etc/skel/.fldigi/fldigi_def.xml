@@ -1797,7 +1797,7 @@ PTT device -->
 
 <!-- type: std::string; default: DEFAULT_HAMRIGDEVICE
 Hamlib rig device -->
-<HAMRIGDEVICE>/dev/ttyS0</HAMRIGDEVICE>
+<HAMRIGDEVICE>localhost:4532</HAMRIGDEVICE>
 
 <!-- type: std::string; default: &quot;&quot;
 Hamlib rig name -->
