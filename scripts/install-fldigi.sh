@@ -1,6 +1,7 @@
 #!/bin/bash
 # Author  : Gaston Gonzalez
 # Date    : 17 September 2025
+# Updated : 2 October 2025
 # Purpose : Builds and installs fldigi
 set -e
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
@@ -35,6 +36,9 @@ make
 
 # Install
 make install
+
+# Use wrapper script as launcher executable
+sed -i 's|^Exec.*|Exec=/opt/emcomm-tools/bin/et-fldigi start|' /opt/fldigi/share/applications/fldigi.desktop
 
 [[ -e ${LINK_PATH} ]] && rm ${LINK_PATH}
 ln -v -s ${INSTALL_DIR} ${LINK_PATH}

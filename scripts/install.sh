@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 16 March 2024
-# Updated : 30 September          2025
+# Updated : 2 October 2025
 # Purpose : Main installer for EmComm Tools Community (ETC)
 
 . ./env.sh
@@ -90,4 +90,6 @@ exitIfNotRoot
 
 # Install fldigi suite
 ./install-fldigi.sh
+./install-et-portaudio.sh
+
 # TODO: add installers for flmsg and flamp
