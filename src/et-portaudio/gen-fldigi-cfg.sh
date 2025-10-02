@@ -7,8 +7,8 @@
 # NOTE: THIS IS SCRIPT IS INTENDED FOR DEVELOPMENT OF THE PNP SOLUTION. 
 
 CMD=et-portaudio
-PORT_AUDIO_CONF=conf.tmp
-GEO_CONF=geo.tmp
+PORT_AUDIO_CONF=/tmp/conf.tmp
+GEO_CONF=/tmp/geo.tmp
 FLDIGI_CONF_DIR="${HOME}/.fldigi"
 FLDIGI_CONF_FILE="${FLDIGI_CONF_DIR}/fldigi_def.xml"
 
