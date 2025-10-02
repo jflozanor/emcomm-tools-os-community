@@ -1,17 +1,17 @@
 #!/bin/bash
 # Author  : Gaston Gonzalez
 # Date    : 1 October 2025
+# Updated : 2 October 2025
 # Purpose : Temporary script to fast-fail dynamic fldigi config for PnP
 #
-# NOTE:
-#
-# THIS IS JUST USED DURING DEVELOPMENT. AN XML PARSER WILL BE USED TO MODIFY
-# THE FLDIGI CONFIG FOR THE FINAL PNP SOLUTION. SO THAT USER CHANGES CAN STILL
-# BE PERSISTED.
+# NOTE: THIS IS SCRIPT IS INTENDED FOR DEVELOPMENT OF THE PNP SOLUTION. 
 
 CMD=et-portaudio
 PORT_AUDIO_CONF=conf.tmp
+GEO_CONF=geo.tmp
 FLDIGI_CONF_FILE="${HOME}/.fldigi/fldigi_def.xml"
+
+[ -z "$ET_USER_CONFIG" ] && ET_USER_CONFIG="${HOME}/.config/emcomm-tools/user.json"
 
 # clean up temporary config that may exist
 [[ -e ${PORT_AUDIO_CONF} ]] && rm ${PORT_AUDIO_CONF}
@@ -39,7 +39,11 @@ fi
 et-log "Copying fldigi template..."
 cp -v ../../overlay/etc/skel/.fldigi/fldigi_def.xml ~/.fldigi/
 
+##############################################
+# Map ALSA ET_AUDIO device to PortAudio device
+##############################################
 et-log "Updating PortAudio devices..."
+
 sed -i "s|^<AUDIOIO>.*|<AUDIOIO>1</AUDIOIO>|" ${FLDIGI_CONF_FILE}
 
 sed -i "s|^<PORTINDEVICE>.*|<PORTINDEVICE>${DEVICE}</PORTINDEVICE>|" ${FLDIGI_CONF_FILE}
@@ -47,3 +51,37 @@ sed -i "s|^<PORTININDEX>.*|<PORTININDEX>${INDEX}</PORTININDEX>|" ${FLDIGI_CONF_F
 
 sed -i "s|^<PORTOUTDEVICE>.*|<PORTOUTDEVICE>${DEVICE}</PORTOUTDEVICE>|" ${FLDIGI_CONF_FILE}
 sed -i "s|^<PORTOUTINDEX>.*|<PORTOUTINDEX>${INDEX}</PORTOUTINDEX>|" ${FLDIGI_CONF_FILE}
+
+et-log "Using device '${DEVICE}' and device index '${INDEX}' for PortAudio configuration"
+
+
+#################
+# Update callsign
+#################
+et-log "Updating callsign..."
+CALLSIGN=$(jq -r -e '.callsign' ${ET_USER_CONFIG})
+
+if [[ "${CALLSIGN}" = "N0CALL" ]]; then
+   et-log "Exiting early. No callsign set. Run: et-user."
+   exit 1
+fi
+
+et-log "Using callsign '${CALLSIGN}'"
+sed -i "s|^<MYCALL>.*|<MYCALL>${CALLSIGN}</MYCALL>|" ${FLDIGI_CONF_FILE}
+
+
+###############################################
+# Update grid based on ETC geolocation services
+###############################################
+et-log "Updating your grid square..."
+curl -f -s "http://localhost:1981/api/geo/position" > ${GEO_CONF}
+
+if [[ $? -eq 0 ]]; then
+  GRID=$(jq -r -e '.position.gridSquare' ${GEO_CONF})
+  if [[ $? -eq 0 ]]; then
+    et-log "Using grid square '${GRID}' for your location"
+    sed -i "s|^<MYLOC>.*|<MYLOC>${GRID}</MYLOC>|" ${FLDIGI_CONF_FILE}
+  fi
+fi
+
+[[ -e ${GEO_CONF} ]] && rm ${GEO_CONF}

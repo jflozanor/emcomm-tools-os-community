@@ -2131,7 +2131,7 @@ Operator name -->
 
 <!-- type: std::string; default: &quot;&quot;
 Operator Maidenhead locator -->
-<MYLOC></MYLOC>
+<MYLOC>{{ET_GRID}}</MYLOC>
 
 <!-- type: std::string; default: &quot;&quot;
 Antenna description (keep short!) -->
@@ -2139,7 +2139,7 @@ Antenna description (keep short!) -->
 
 <!-- type: std::string; default: &quot;&quot;
 Operator call sign, if distinct from the station call MYCALL -->
-<OPERCALL>{{ET_CALLSIGN}}</OPERCALL>
+<OPERCALL></OPERCALL>
 
 <!-- type: int; default: SND_IDX_NULL
 Audio subsystem.  Values are as follows:
