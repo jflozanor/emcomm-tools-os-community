@@ -12,7 +12,6 @@ APP="et-portaudio"
 VERSION="1.0.0"
 APP_AND_VERSION="${APP}-${VERSION}"
 INSTALL_DIR="/opt/${APP_AND_VERSION}"
-INSTALL_BIN_DIR="${INSTALL_DIR}/bin"
 LINK_PATH="/opt/${APP}"
 
 et-log "Installing ${APP} ${VERSION}"
