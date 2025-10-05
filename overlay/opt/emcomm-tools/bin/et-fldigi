@@ -2,6 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 2 October 2025
+# Updated : 5 October 2025
 # Purpose : Wrapper script for starting fldigi with PnP support
 #
 # Preconditions
@@ -127,18 +128,10 @@ update-config () {
     # Update grid based on ETC geolocation services
     ###############################################
     et-log "Updating your grid square..."
-    curl -f -s "http://localhost:1981/api/geo/position" > ${GEO_CONF}
 
-    if [[ $? -eq 0 ]]; then
-      GRID=$(jq -r -e '.position.gridSquare' ${GEO_CONF})
-      if [[ $? -eq 0 ]]; then
-        et-log "Using grid square '${GRID}' for your location"
-        sed -i "s|^<MYLOC>.*|<MYLOC>${GRID}</MYLOC>|" ${FLDIGI_CONF_FILE}
-      fi
-    fi
-
-    [[ -e ${GEO_CONF} ]] && rm ${GEO_CONF}
-
+    GRID=$(et-system-info grid)
+    et-log "Using grid square '${GRID}' for your location"
+    sed -i "s|^<MYLOC>.*|<MYLOC>${GRID}</MYLOC>|" ${FLDIGI_CONF_FILE}
 
     #####################################################################
     # Configure CAT interface using Hamlib's rig control daemon (rigctld)

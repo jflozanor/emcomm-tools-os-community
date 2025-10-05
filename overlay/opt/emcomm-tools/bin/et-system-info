@@ -41,7 +41,21 @@ case $1 in
     cat ${ET_USER_CONFIG} | jq -r .callsign
     ;;
   grid)
-    cat ${ET_USER_CONFIG} | jq -r .grid
+    FALLBACK_GRID=$(jq -r -e '.grid' ${ET_USER_CONFIG})
+    GEO_CONF=/tmp/geo.tmp
+
+    curl -f -s "http://localhost:1981/api/geo/position" > ${GEO_CONF}
+    if [[ $? -eq 0 ]]; then
+      API_GRID=$(jq -r -e '.position.gridSquare' ${GEO_CONF})
+      [[ -e ${GEO_CONF} ]] && rm ${GEO_CONF}
+      if [[ $? -eq 0 ]]; then
+        echo ${API_GRID}
+	exit
+      fi
+    fi
+
+    echo ${FALLBACK_GRID}
+
     ;;
   et-audio)
 
