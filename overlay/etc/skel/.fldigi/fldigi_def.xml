@@ -1096,7 +1096,7 @@ value 2 to 8 -->
 
 <!-- type: double; default: 4.5
 6, 4.5, 3 or 2 baud -->
-<FSQBAUD>4.5</FSQBAUD>
+<FSQBAUD>3</FSQBAUD>
 
 <!-- type: int; default: 3
 3 / 6 -->
@@ -1132,7 +1132,7 @@ QTC text string -->
 <!-- type: bool; default: 0
 0 - NO, 1 - YES
 convert operator MYCALL to lower case for directed call triggers -->
-<FSQLOWERCASE>0</FSQLOWERCASE>
+<FSQLOWERCASE>1</FSQLOWERCASE>
 
 <!-- type: int; default: 6
 Time out auto replies after XX seconds -->
