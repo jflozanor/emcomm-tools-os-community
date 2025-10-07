@@ -1,7 +1,7 @@
 #!/bin/bash
 # Author  : Gaston Gonzalez
 # Date    : 1 February 2025
-# Updated : 20 August 2025
+# Updated : 7 October 2025
 # Purpose : Common environment variables and functions
 
 # Standardized device paths for supported hardware
@@ -140,4 +140,26 @@ download_with_retries() {
 
   echo "Download failed after $max_retries attempts."
   return 1
+}
+
+# prime_rigctld_conn makes a connection to the rig control daemon (rigctld)
+# and requests the radio's frequency in an effort to initialize CAT control.
+#
+# For example, it takes almost 6 seconds for rig control clients (including 
+# the rigctl client) to connect the first time with the Xiegu X6100 to rigctld.
+# JS8Call will fail to handle this properly if this "priming" task is not
+# executed before it starts up..
+prime_rigctld_conn() {
+ 
+  ACTIVE_RADIO=$(et-system-info active-radio)
+  case "${ACTIVE_RADIO}" in
+    "X6100")
+      et-log "Priming rig control client connection for ${ACTIVE_RADIO}"
+      notify_user "Please be patient. Priming connection to radio."
+      rigctl -m 2 f > /dev/null
+      ;;
+    *)
+      et-log "No rigctld priming needed for ${ACTIVE_RADIO}"
+      ;;
+  esac
 }

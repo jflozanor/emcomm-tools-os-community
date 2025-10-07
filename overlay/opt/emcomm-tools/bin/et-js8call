@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 24 October 2024
-# Updated : 6 October 2025
+# Updated : 7 October 2025
 # Purpose : Wrapper script for starting JS8Call with PnP support
 #
 # Preconditions
@@ -12,6 +12,7 @@
 # 1. Stop all running EmComm Tools modes
 # 2. JS8Call audio settings updated
 # 3. JS8Call started
+. /opt/emcomm-tools/bin/et-common
 
 usage() {
   echo "usage: $(basename $0) <command>"
@@ -33,15 +34,8 @@ notify_user() {
 
 start() {
 
-  # Handle a special case with Xiegu X6100 to pre-initialize the hamlib
-  # client connection. It takes almost 6 seconds for rig control clients
-  # (including the rigctl client) to connect the first time with the X6100.
-  ACTIVE_RADIO=$(et-system-info active-radio)
-  if [[ "${ACTIVE_RADIO}" = "X6100" ]]; then
-    et-log "Priming rig control client connection for ${ACTIVE_RADIO}"
-    notify_user "JS8Call will be slow to start due to rig priming"
-    rigctl -m 2 f > /dev/null
-  fi
+  # Ensure that we have a pre-initialized CAT control connection for select radios
+  prime_rigctld_conn
 
   /opt/emcomm-tools/bin/et-kill-all && update-config && /usr/bin/js8call &
 
@@ -53,7 +47,7 @@ start() {
 
 }
 
-update-config () {
+update-config() {
 
     JS8CALL_CONF_FILE="${HOME}/.config/JS8Call.ini"
    
