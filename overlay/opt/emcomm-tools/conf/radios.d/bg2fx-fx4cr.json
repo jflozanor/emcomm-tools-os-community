@@ -9,6 +9,9 @@
     "conf": "data_bits=8,serial_handshake=None,stop_bits=1,rts_state=OFF",
     "pttOnly": "false"
   },
+  "audio": {
+    "script": "/opt/emcomm-tools/conf/radios.d/audio/bg2fx-fx4cr.sh"
+  },
   "notes": [
     "Short press [PWR], then rotate AF knob until POW = 5.0",
     "Toggle [SSB] button until both USB and DIG appear",

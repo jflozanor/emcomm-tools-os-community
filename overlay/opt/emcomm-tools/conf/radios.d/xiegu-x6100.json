@@ -9,7 +9,7 @@
     "conf": "timeout=1000,retry=1,timeout_retry=1",
     "primeRig": true
   },
-    "audio": {
+  "audio": {
     "script": "/opt/emcomm-tools/conf/radios.d/audio/xiegu-x6100.sh"
   },
   "notes": [
