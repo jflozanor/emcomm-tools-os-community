@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 25 November 2022
-# Updated : 6 October 2025
+# Updated : 13 October 2025
 # Purpose : Install hamlib for rig control (rigctld)
 set -e
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
@@ -12,7 +12,11 @@ trap 'et-log "\"${last_command}\" command failed with exit code $?."' ERR
 . ../overlay/opt/emcomm-tools/bin/et-common
 
 APP="hamlib"
-VERSION=4.6.5
+# The latest verion of Hamlib 4.6.5 has a problem with initial client
+# connections that can lead to rig control timeouts in applications like 
+# JS8Call. Rolling back to version 4.5 which was stable.
+#VERSION=4.6.5
+VERSION=4.5
 APP_AND_VERSION="${APP}-${VERSION}"
 INSTALL_DIR="/opt/${APP_AND_VERSION}"
 LINK_PATH="/opt/${APP}"

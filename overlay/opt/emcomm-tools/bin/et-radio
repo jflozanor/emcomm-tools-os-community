@@ -2,7 +2,7 @@
 #
 # Author   : Gaston Gonzalez
 # Date     : 11 October 2024
-# Updated  : 16 March 2025
+# Updated  : 13 March 2025
 # Purpose  : A script for managaing plug-and-play radios
 source /opt/emcomm-tools/bin/et-common
 
@@ -18,7 +18,7 @@ while IFS= read -r radio; do
     MODEL=$(cat $radio | jq -r .model)
 
     options+=("$ID" "$VENDOR $MODEL")
-done < <(find $ET_HOME/conf/radios.d -type f | grep -v "bt.json" | sort)
+done < <(find $ET_HOME/conf/radios.d -type f -name \*.json | grep -v "bt.json" | sort)
 
 SELECTED_RADIO=$(dialog --clear --menu "Select a radio:" 21 60 10 "${options[@]}" 3>&1 1>&2 2>&3)
 exit_status=$?

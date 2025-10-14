@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 3 November 2024
-# Updated : 16 March 2025
+# Updated : 13 October 2025
 # Purpose : Wrapper script for starting YAAC with PnP support
 #
 # Preconditions:
@@ -40,7 +40,7 @@ start() {
   update-config
   
   if [[ $? -eq 0 ]]; then
-    CMD="java -jar /opt/yaac/YAAC.jar"
+    CMD="java -Xms2g -Xmx6g -XX:+UseG1GC -jar /opt/yaac/YAAC.jar"
 
     PS_OUT=$(ps -ef | grep "[r]fcomm0")
     if [[ $? -eq 0 ]]; then

@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 31 October 2024
-# Updated : 5 October 2025
+# Updated : 13 October 2025
 # Purpose : Configures ET audio device with sane defaults
 #
 # Preconditions
@@ -10,6 +10,7 @@
 #
 # Postconditions
 # 1. ALSA settings set on ET audio device
+. /opt/emcomm-tools/bin/et-common
 
 usage() {
   echo "usage: $(basename $0) <command>"
@@ -48,10 +49,27 @@ update-config () {
 
        et-log "Updating audio device: '${ET_DEVICE_NAME}' (${FULL_AUDIO_DEVICE})' for ALSA PnP configuration."
 
+       # Handle audio settings specifically if defined in the radio configuration
+       AUDIO_INIT_SCRIPT=$(jq -r -e '.audio.script' ${ET_ACTIVE_RADIO_CONF})
+       if [[ $? -eq 0 ]]; then
+         et-log "Executing audio configuration script: ${AUDIO_INIT_SCRIPT}"
+
+         CMD="${AUDIO_INIT_SCRIPT} ${AUDIO_CARD} ${AUDIO_DEVICE}"
+         et-log "Running command: ${CMD}"
+         ${CMD}
+
+         if [[ $? -ne 0 ]]; then
+           et-log "Audio init script ${AUDIO_INIT_SCRIPT} failed. Can't start application."
+           notify-user "Audio init script failed. Can't start application."
+           exit 1
+         fi
+	 
+         exit 0
+       fi
+
+       # Handle audio generically for most sound card interfaces
        case ${ET_DEVICE_NAME} in
          "DIGIRIG_MOBILE")
-	   # TODO: 92% is needed for the TX-500MP. Revisit approach for setting speaker
-	   #       out differently across radios definitions.
            # Unmute Speaker a set volume. Adjust if remote station can't decode you. Your TX controls.
            amixer -q -c ${AUDIO_CARD} sset Speaker Playback Switch 42% unmute
            # Unmute Mic
@@ -93,31 +111,6 @@ update-config () {
            # Unmute Mic
            amixer -q -c ${AUDIO_CARD} sset Mic Playback Switch 52% unmute
            # Set "L/R Capture" to 19. Adjust if you can't decode received audio. Your RX controls.
-           amixer -q -c ${AUDIO_CARD} sset Mic Capture Switch 31% unmute
-           # Disable Auto Gain Control
-           amixer -q -c ${AUDIO_CARD} sset 'Auto Gain Control' mute
-
-           et-log "Applied amixer settings for ${ET_DEVICE_NAME}"
-         ;;
-         "FX-4CR")
-           # Unmute the PCM and set the volume to 21% to get the full output power. This value is
-           # dependent on the settings defined for the FX-4CR in the et-radio notes. 
-	   amixer -q -c ${AUDIO_CARD} sset 'PCM' 31% unmute
-
-           # Set "L/R Capture" to 55%. Adjust if you can't decode received audio.
-	   amixer -q -c ${AUDIO_CARD} sset 'Mic' 67% unmute
-
-           # Disable Auto Gain Control
-           amixer -q -c ${AUDIO_CARD} sset 'Auto Gain Control' mute
-
-           et-log "Applied amixer settings for ${ET_DEVICE_NAME}"
-	   ;;
-         "X6100")
-           # Unmute Speaker a set volume. Adjust if remote station can't decode you.
-           amixer -q -c ${AUDIO_CARD} sset Speaker Playback Switch 42% unmute
-           # Unmute Mic
-           amixer -q -c ${AUDIO_CARD} sset Mic Playback Switch 52% unmute
-           # Set "L/R Capture" to 19. Adjust if you can't decode received audio. 
            amixer -q -c ${AUDIO_CARD} sset Mic Capture Switch 31% unmute
            # Disable Auto Gain Control
            amixer -q -c ${AUDIO_CARD} sset 'Auto Gain Control' mute

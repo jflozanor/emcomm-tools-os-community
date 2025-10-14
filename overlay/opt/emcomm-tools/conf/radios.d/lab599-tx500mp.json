@@ -8,6 +8,9 @@
     "ptt": "RTS",
     "pttOnly": "false"
   },
+  "audio": {
+    "script": "/opt/emcomm-tools/conf/radios.d/audio/lab599-tx500mp.sh"
+  },
   "notes": [
     "1. Set MENU 36 CAT PROTOCOL = TS2000",
     "2. Set MODE = DIGI",

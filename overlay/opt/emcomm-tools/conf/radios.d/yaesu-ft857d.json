@@ -7,6 +7,9 @@
     "baud": "38400",
     "ptt": "RTS"
   },
+  "audio": {
+    "script": "/opt/emcomm-tools/conf/radios.d/audio/yaesu-ft857d.sh"
+  },
   "notes": [
     "Menu 019 CAT RATE = 38400",
     "Menu 020 CAT = CAT",
