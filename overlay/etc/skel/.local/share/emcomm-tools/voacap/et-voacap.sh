@@ -2,7 +2,7 @@
 #
 # Author  : Gaston Gonzalez
 # Date    : 23 May 2023
-# Updated : 27 August 2025
+# Updated : 12 November 2025
 # Purpose : Offline HF prediction using voacapl
 set -e
 set -o pipefail
@@ -143,8 +143,8 @@ usage() {
   echo "ETC GPS unit or fallback to the grid square configured by 'et-user'."
   echo 
   echo "Other options (required):"
-  echo "  -p POWER                  Output power [5|20|100|500|1500]"
-  echo "  -m MODE                   Mode [am|cw|js8|ssb]"
+  echo "  -p POWER                  Output power [5|10|20|50|100|500|1500]"
+  echo "  -m MODE                   Mode [am|ardop|cw|js8|ssb]"
   echo
 
   exit 1
@@ -197,6 +197,9 @@ case "${MODE,,}" in
     ;;
   js8-fast)
     MD="19.0"
+    ;;
+  ardop)
+    MD="20.0"
     ;;
   js8-turbo)
     MD="24.0"
@@ -285,15 +288,22 @@ RK1=$( awk -v n1=$RK -v n2=180 -v n3=-180 'BEGIN {if (n1<n3 || n1>n2) printf ("%
 RLO=$( awk -v n1=$RK1 -v n2=0 'BEGIN {if (n1<n2) { n1=substr(n1,2); printf ("%7sW", n1); } else printf ("%7sE", n1);}' )
 
 # Power settings 
-# Use 80% of user-defined power and express in killiwatts
-# TODO: Make calculation dynamic. 
+# Use 80% of user-defined power and express it in killiwatts since VOACAP's
+# power setting is the power at the feedpoint not the transmitter.
+#
+# PW=(PWR×0.8)/1000
+#
 PWR=$power
 PW="0.0800"
 echo "TX Power: ${PWR} watts"
 if [ "$PWR" = "5" ]; then
   PW="0.0040"
+elif [ "$PWR" = "10" ]; then
+  PW="0.0080"
 elif [ "$PWR" = "20" ]; then
   PW="0.0160"
+elif [ "$PWR" = "50" ]; then
+  PW="0.0400"
 elif [ "$PWR" = "100" ]; then
   PW="0.0800"
 elif [ "$PWR" = "500" ]; then
@@ -305,6 +315,14 @@ else
   usage
   exit 1
 fi
+
+# TODO: Add as an argument to R6
+# Man-made Noise
+# 140. industrial
+# 144. residential
+# 150. rural
+# 163. remote
+MMN="144."
 
 # Format for 117
 # NOTE: The card requires <SSN>. (117.)
@@ -324,7 +342,7 @@ MONTH      $YEAR $MONTH_FMT
 SUNSPOT    $ssn.
 LABEL     $TX$RX
 CIRCUIT  $TLA  $TLO   $RLA  $RLO  S     0
-SYSTEM       1. 155. 3.00  90. $MD 3.00 0.10
+SYSTEM       1. $MMN 3.00  90. $MD 3.00 0.10
 FPROB      1.00 1.00 1.00 0.00
 ANTENNA       1    1    2   30     0.000[samples/sample.00    ]  0.0    $PW
 ANTENNA       2    2    2   30     0.000[samples/sample.00    ]  0.0    0.0000
