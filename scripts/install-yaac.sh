@@ -1,8 +1,14 @@
 #!/bin/bash
 # Author  : Gaston Gonzalez
 # Date    : 3 November 2024
-# Updated : 7 November 2024
+# Updated : 12 November 2024
 # Purpose : Install YAAC
+set -e
+trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+trap 'et-log "\"${last_command}\" command failed with exit code $?."' ERR
+
+. ./env.sh
+. ../overlay/opt/emcomm-tools/bin/et-common
 
 VERSION=latest
 ZIP_FILE=YAAC.zip
@@ -14,7 +20,7 @@ et-log "Installing YAAC..."
 URL=https://www.ka2ddo.org/ka2ddo/${ZIP_FILE}
 
 et-log "Downloading YAAC: ${URL}"
-curl -s -L -o ${ZIP_FILE} --fail ${URL}
+download_with_retries ${URL} ${ZIP_FILE}
 
 mv -v ${ZIP_FILE} ${ET_DIST_DIR}
 
