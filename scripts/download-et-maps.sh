@@ -24,7 +24,7 @@ FILES=(
 )
 
 # Show dialog
-SELECTED_COUNTRY=$(dialog --clear --menu "Select a country" 15 40 5 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+SELECTED_COUNTRY=$(dialog --clear --menu "Select a country" 10 40 5 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 EXIT_STATUS=$?
 
 tput sgr0 && clear
