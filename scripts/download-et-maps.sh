@@ -1,11 +1,11 @@
 #!/bin/bash
 # Author   : Gaston Gonzalez
 # Date     : 6 July 2025
-# Updated  : 20 November 2025
+# Updated  : 21 November 2025
 # Purpose  : Downloads pre-rendered raster map tiles in mbtile format
 
 BASE_URL="https://github.com/thetechprepper/emcomm-tools-os-community/releases/download"
-RELEASE="emcomm-tools-os-community-20250401-r4-final-4.0.0"
+RELEASE="emcomm-tools-os-community-20251128-r5-final-5.0.0"
 TILESET_DIR="/etc/skel/.local/share/emcomm-tools/mbtileserver/tilesets"
 
 # Display names for the menu
@@ -20,7 +20,7 @@ declare -A FILES
 FILES=(
   ["us"]="osm-us-zoom0to11-20251120.mbtiles"
   ["ca"]="osm-ca-zoom0to10-20251120.mbtiles"
-  ["world"]="osm-world-zoom0to6-20251120.mbtiles"
+  ["world"]="osm-world-zoom0to7-20251121.mbtiles"
 )
 
 # Show dialog
