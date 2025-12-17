@@ -1,0 +1,24 @@
+# Author  : Gaston Gonzalez
+# Date    : 16 December 2025
+# Purpose : User systemd unit file for EmComm Tools API (Python version)
+#
+# Usage:
+#  Check status       : systemctl --user status et-service-et-api-python
+#  Start service      : systemctl --user start et-service-et-api-python
+#  Stop service       : systemctl --user stop et-service-et-api-python
+#  Reload this config : systemctl --user daemon-reload
+
+[Unit]
+Description=EmComm Tools API (Python)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/emcomm-tools-api/bin/et-api
+Restart=always
+RestartSec=5
+Environment=ET_API_DATA_DIR=/opt/emcomm-tools-api/data
+Environment=ET_API_INDEX_DIR=/opt/emcomm-tools-api/index
+
+[Install]
+WantedBy=default.target
